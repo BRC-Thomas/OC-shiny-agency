@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import colors from '../../../utils/style/colors';
 import { Loader } from '../../../utils/style/Atoms';
 import { SurveyContext } from '../../../utils/context';
+import { useFetch } from '../../../utils/hooks';
 
 interface SurveyData {
   [key: string]: string;
@@ -68,10 +69,11 @@ function Survey() {
   const questionNumberInt = questionNumber ? parseInt(questionNumber) : 1;
   const previousQuestion = questionNumberInt === 1 ? 1 : questionNumberInt - 1;
   const nextQuestion = questionNumberInt + 1;
-  const [surveyData, setSurveyData] = useState<SurveyData>({});
-  const [isDataLoading, setDataLoading] = useState(false);
+  const { data, isLoading, error } = useFetch({
+    url: `http://localhost:8000/survey`,
+  });
+  const { surveyData } = data;
   const { answers, saveAnswers } = useContext<any>(SurveyContext);
-  const [error, setError] = useState(false);
 
   function saveReply(answer: boolean) {
     if (questionNumber) {
@@ -79,22 +81,22 @@ function Survey() {
     }
   }
 
-  useEffect(() => {
-    async function fetchSurvey() {
-      setDataLoading(true);
-      try {
-        const response = await fetch(`http://localhost:8000/survey`);
-        const { surveyData } = await response.json();
-        setSurveyData(surveyData);
-      } catch (err) {
-        console.log(err);
-        setError(true);
-      } finally {
-        setDataLoading(false);
-      }
-    }
-    fetchSurvey();
-  }, []);
+  //  useEffect(() => {
+  //    async function fetchSurvey() {
+  //      setDataLoading(true);
+  //      try {
+  //        const response = await fetch(`http://localhost:8000/survey`);
+  //        const { surveyData } = await response.json();
+  //        setSurveyData(surveyData);
+  //      } catch (err) {
+  //        console.log(err);
+  //        setError(true);
+  //      } finally {
+  //        setDataLoading(false);
+  //      }
+  //    }
+  //    fetchSurvey();
+  //  }, []);
 
   if (error) {
     return <span>Oups il y a eu un problème</span>;
@@ -103,10 +105,12 @@ function Survey() {
   return (
     <SurveyContainer>
       <QuestionTitle>Question {questionNumber}</QuestionTitle>
-      {isDataLoading ? (
+      {isLoading ? (
         <Loader />
       ) : (
-        <QuestionContent>{surveyData[questionNumber!]}</QuestionContent>
+        <QuestionContent>
+          {surveyData && surveyData[questionNumber!]}
+        </QuestionContent>
       )}
       <ReplyWrapper>
         <ReplyBox
@@ -129,7 +133,7 @@ function Survey() {
 
       <LinkWrapper>
         <Link to={`/survey/${previousQuestion}`}>Précédent</Link>
-        {surveyData[questionNumberInt + 1] ? (
+        {surveyData && surveyData[questionNumberInt + 1] ? (
           <Link to={`/survey/${nextQuestion}`}>Suivant</Link>
         ) : (
           <Link to="/results">Résultats</Link>
