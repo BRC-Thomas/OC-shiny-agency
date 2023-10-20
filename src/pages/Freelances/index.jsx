@@ -34,7 +34,7 @@ const LoaderWrapper = styled.div`
   justify-content: center;
 `
 
-function Freelances() {
+export function Freelances() {
   const { theme } = useTheme()
   const { data, isLoading, error } = useFetch(
     `http://localhost:8000/freelances`
@@ -57,7 +57,7 @@ function Freelances() {
       </PageSubtitle>
       {isLoading ? (
         <LoaderWrapper>
-          <Loader theme={theme} />
+          <Loader theme={theme} data-testid="loader" />
         </LoaderWrapper>
       ) : (
         <CardsContainer>
